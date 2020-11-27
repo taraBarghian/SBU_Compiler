@@ -1,12 +1,11 @@
-# SBU compiler project
-We suppose to design a compiler for compiler design course by Dr. Bahrami
+# SBU compiler Course - Fall 2020
 
 language : Decaf 
 
 
 ## team members
-Narges Ghasemi (github link)
+Narges Ghasemi 
 
-Tara Barghian (github link)
+Tara Barghian 
 
-Mohammad Hashemi (github link)
+Mohammad Hashemi 
