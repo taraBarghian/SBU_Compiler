@@ -1,0 +1,270 @@
+import java_cup.runtime.*;
+
+
+parser code {:
+    private Scanner scanner;
+
+    public parser (Scanner scanner){
+        this.scanner = scanner;
+    }
+:}
+scan with{:
+return scanner.next_token();
+:}
+
+//keywords
+terminal EXTENDS, VOID,IMPLEMENTS,PRIVATE, CLASS,PROTECTED, PUBLIC, INTERFACE, IF,ELSE, WHILE,FOR,RETURN,BREAK,CONTINUE,PRINT, NEW;
+terminal THIS,INT, DOUBLE , BOOL , STRING ;
+
+//library finction
+terminal ReadInteger, readLine, NewArray, itod,dtoi,itob,btoi;
+
+/**** oP  ****/
+// [],<>, {},()
+terminal BRACKETS_OPEN,BRACKETS_CLOSE, BOTH_BRACKETS,BRACES_OPEN,BRACES_CLOSE,BOTH_BRACES,PARENTHESES_OPEN,PARENTHESES_CLOSE,BOTH_PARENTHESES;
+terminal COMA,SEMI,COLON, DOT, PLUS, MINUS, TIMES, DEVIDE, MOD, LT, LTEQ,GT,GTEQ,EQEQ,NOTEQ,AND,OR,NOT, EQ;
+
+//consts
+terminal Integer intConstant;
+terminal Double  doubleConstant;
+terminal Boolean boolConstant;
+terminal String  stringConstant, IDENT, NULL;
+
+
+
+nonterminal Program, Decl, VariableDecl, Variable, Type, FunctionDecl, Formals, ClassDecl, Field, AccessMode, InterfaceDecl, Prototype, StmtBlock, Stmt, IfStmt, WhileStmt, ForStmt, ReturnStmt, BreakStmt, ContinueStmt, PrintStmt, Expr, LValue, Call, Actuals, Constant;
+nonterminal Extra1, Extra2, Extra3;
+nonterminal NonCompulsory1,NonCompulsory2,NonCompulsory3,NonCompulsory4,NonCompulsory5,NonCompulsory6,NonCompulsory7,NonCompulsory8, NonCompulsory9;
+
+nonterminal  Expr_layer1,Expr_layer2,Expr_layer3,Expr_layer4,Expr_layer5,Expr_layer6,Expr_layer7,Expr_layer8,Expr_layer9,Expr_layer10, End_Expr,Instead_INDENT;
+
+nonterminal A_layer,B_layer,C_layer,D_layer,BorC, F_layer,G_layer,H_hayer,I_layer,J_layer,Ajib_dec;
+
+/* Precedences */
+precedence left EQ;
+precedence left OR;
+precedence left AND;
+precedence left NOTEQ, EQEQ;
+precedence left GT,GTEQ,LT, LTEQ;
+precedence left PLUS, MINUS;
+precedence left TIMES, DEVIDE, MOD;
+precedence left NOT;
+precedence left DOT;
+precedence left BRACKETS_OPEN;
+precedence left PARENTHESES_OPEN;
+
+
+
+//** grammer **//
+
+start with Program;
+
+Program ::=
+            Decl Extra1 ;
+
+Extra1 ::=
+           Decl Extra1
+           |
+           /*epsilon*/
+           ;
+
+Decl ::=
+        VariableDecl
+        | FunctionDecl
+        | ClassDecl
+        | InterfaceDecl
+        | Ajib_dec;
+
+Ajib_dec ::= IDENT IDENT SEMI
+  | IDENT BOTH_BRACKETS IDENT SEMI;
+
+VariableDecl ::=
+                Variable SEMI;
+
+Variable ::=
+            Type IDENT; //Todo chera ident sabz nmishe ?!!
+
+Type ::=
+        INT
+       | DOUBLE
+       | BOOL
+       | STRING
+     //  | IDENT
+       | Type BOTH_BRACKETS
+       ;
+
+
+FunctionDecl ::=
+
+            Type IDENT PARENTHESES_OPEN Formals PARENTHESES_CLOSE StmtBlock
+            |IDENT IDENT PARENTHESES_OPEN Formals PARENTHESES_CLOSE StmtBlock
+            | VOID IDENT PARENTHESES_OPEN Formals PARENTHESES_CLOSE StmtBlock ;
+
+
+Formals ::=
+            Variable Extra2
+            |Ajib_dec Extra2
+            |
+            /*epsilon*/
+            ;
+
+Extra2 ::=
+            COMA  Variable Extra2
+            |COMA Ajib_dec Extra2
+            |
+            /*epsilon*/
+            ;
+
+
+ClassDecl ::=
+            CLASS IDENT NonCompulsory1  NonCompulsory2  BRACES_OPEN NonCompulsory3 BRACES_CLOSE;
+
+
+NonCompulsory1 ::= EXTENDS IDENT|  /*epsilon*/ ;
+
+NonCompulsory2 ::= IMPLEMENTS IDENT Extra3 ;
+
+Extra3 ::= COMA IDENT Extra3 | /*epsilon*/ ;
+
+NonCompulsory3 ::= Field NonCompulsory3 | /*epsilon*/;
+
+
+Field ::=
+        AccessMode VariableDecl
+         | AccessMode Ajib_dec
+        | AccessMode FunctionDecl;
+
+
+AccessMode ::=
+            PRIVATE
+            | PROTECTED
+            | PUBLIC
+            |
+            /*epsilon*/
+            ;
+
+InterfaceDecl ::=
+                INTERFACE IDENT BRACES_OPEN NonCompulsory4 BRACES_CLOSE;
+
+NonCompulsory4 ::= Prototype NonCompulsory4 | /* epsilon */ ;
+
+Prototype ::=
+            Type IDENT PARENTHESES_OPEN Formals PARENTHESES_CLOSE SEMI
+             IDENT IDENT PARENTHESES_OPEN Formals PARENTHESES_CLOSE SEMI
+            |VOID IDENT PARENTHESES_OPEN Formals PARENTHESES_CLOSE SEMI;
+
+StmtBlock ::= BRACES_OPEN  BorC BRACES_CLOSE
+              |BRACES_OPEN  D_layer  BRACES_CLOSE;
+            //  |BOTH_BRACES;
+
+BorC ::= B_layer | C_layer| B_layer C_layer | B_layer Ajib_dec C_layer;
+B_layer ::= VariableDecl B_layer |VariableDecl;
+C_layer ::= Stmt C_layer | Stmt ;  // fek konam moshkel ine k be ident mirese hardo
+
+D_layer ::= Ajib_dec D_layer| Ajib_dec| Ajib_dec BorC | B_layer Ajib_dec;
+
+
+Stmt ::=     A_layer SEMI| IfStmt| WhileStmt |ForStmt |BreakStmt | ContinueStmt | ReturnStmt | PrintStmt| StmtBlock ;
+A_layer ::= Expr_layer1 |  ;
+
+
+IfStmt ::= IF PARENTHESES_OPEN Expr PARENTHESES_CLOSE Stmt NonCompulsory7 Stmt ;
+
+NonCompulsory7 ::= ELSE  | ; // TODO <------------ ye epsilon kam darim inja
+
+
+WhileStmt ::= WHILE PARENTHESES_OPEN Expr PARENTHESES_CLOSE Stmt;
+
+ForStmt ::= FOR PARENTHESES_OPEN  NonCompulsory8 SEMI Expr SEMI NonCompulsory8  PARENTHESES_CLOSE Stmt;
+
+
+ReturnStmt ::= RETURN  NonCompulsory8 SEMI ;
+
+NonCompulsory8 ::= Expr | /*epsilon*/ ;
+
+BreakStmt ::= BREAK SEMI ;
+
+ContinueStmt ::= CONTINUE SEMI;
+
+PrintStmt ::= PRINT PARENTHESES_OPEN NonCompulsory9 SEMI PARENTHESES_CLOSE SEMI; //todo + ????
+
+
+
+Expr ::= Expr_layer1  ;
+
+Expr_layer1 ::= Expr_layer9 EQ Expr_layer1 | Expr_layer2;
+
+Expr_layer2 ::= Expr_layer3 OR Expr_layer2 | Expr_layer3;
+
+Expr_layer3 ::= Expr_layer4 AND Expr_layer3 | Expr_layer4;
+
+Expr_layer4 ::= Expr_layer5 EQEQ Expr_layer4
+                | Expr_layer5 NOTEQ Expr_layer4
+                |Expr_layer5 ;
+
+Expr_layer5 ::= Expr_layer5 LTEQ Expr_layer6
+                | Expr_layer5 LT Expr_layer6
+                | Expr_layer5 GTEQ Expr_layer6
+                | Expr_layer5 GT Expr_layer6
+                |Expr_layer6 ;
+
+Expr_layer6 ::= Expr_layer6 PLUS Expr_layer7
+                | Expr_layer6 MINUS Expr_layer7
+                |Expr_layer7;
+
+Expr_layer7 ::= Expr_layer8 TIMES Expr_layer7
+                | Expr_layer8 DEVIDE Expr_layer7
+                | Expr_layer8 MOD Expr_layer7
+                |Expr_layer8 ;
+
+Expr_layer8 ::= MINUS Expr_layer8
+                | NOT Expr_layer8
+                | Expr_layer9 ;
+
+Expr_layer9 ::=
+                Expr_layer9 DOT IDENT G_layer
+                | Expr_layer10 ;
+
+G_layer ::=  PARENTHESES_OPEN Actuals PARENTHESES_CLOSE | ;
+
+Expr_layer10 ::= Expr_layer10 BRACKETS_OPEN Expr_layer1 BRACKETS_CLOSE
+                |End_Expr;
+
+
+
+End_Expr ::=
+             ReadInteger PARENTHESES_OPEN  PARENTHESES_CLOSE
+             | readLine PARENTHESES_OPEN  PARENTHESES_CLOSE
+             | NEW IDENT
+             | NewArray PARENTHESES_OPEN Expr_layer1 COMA Type PARENTHESES_CLOSE // faze badi ye ajib am ezfe she
+             | itod PARENTHESES_OPEN Expr_layer1 PARENTHESES_CLOSE
+             | dtoi PARENTHESES_OPEN Expr_layer1 PARENTHESES_CLOSE
+             | itob PARENTHESES_OPEN Expr_layer1 PARENTHESES_CLOSE
+             | btoi PARENTHESES_OPEN Expr_layer1 PARENTHESES_CLOSE
+             |Constant
+             |THIS
+             |IDENT
+             |PARENTHESES_OPEN NonCompulsory6 PARENTHESES_CLOSE
+             |PARENTHESES_OPEN PARENTHESES_CLOSE
+             ;
+
+NonCompulsory6 ::= Expr_layer1 | NonCompulsory6 Expr_layer1 ;
+
+
+
+
+Actuals ::=
+            Expr_layer1 NonCompulsory9
+            |
+            /* epsilon */
+            ;
+
+
+NonCompulsory9 ::= COMA Expr_layer1 NonCompulsory9 | ;
+
+Constant ::=
+            intConstant
+            | doubleConstant
+            | boolConstant
+            | stringConstant
+            | NULL;
